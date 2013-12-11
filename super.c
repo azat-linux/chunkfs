@@ -86,7 +86,7 @@ chunkfs_read_client_sb(struct chunkfs_chunk_info *ci)
 	 * XXX Yuckity yuckity yuck yuck
 	 */
 	sprintf(mount_path, "%s%llu", path_prefix, ci->ci_chunk_id);
-	retval = path_lookup(mount_path, LOOKUP_FOLLOW, &nd);
+	retval = kern_path(mount_path, LOOKUP_FOLLOW, &nd.path);
 	if (retval) {
 		printk(KERN_ERR "path_lookup for %s failed: %d\n",
 		       mount_path, retval);
@@ -416,7 +416,7 @@ static int chunkfs_read_root(struct super_block *sb)
 	retval = chunkfs_init_dentry(sb->s_root);
 	if (retval)
 		goto out_dput;
-	retval = path_lookup("/chunk1/root/", LOOKUP_FOLLOW, &nd);
+	retval = kern_path("/chunk1/root/", LOOKUP_FOLLOW, &nd.path);
 	if (retval)
 		goto out_dentry;
 	dentry = dget(nd.path.dentry);
