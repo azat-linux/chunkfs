@@ -275,8 +275,10 @@ int chunkfs_setattr(struct dentry *dentry, struct iattr *attr)
 		error = inode_change_ok(client_inode, attr);
 		if (!error)
 			error = security_inode_setattr(client_dentry, attr);
-		if (!error)
-			error = inode_setattr(client_inode, attr);
+		if (!error) {
+			setattr_copy(client_inode, attr);
+			mark_inode_dirty(client_inode);
+		}
 	}
 	if (!error)
 		chunkfs_copy_up_inode(dentry->d_inode, client_inode);
