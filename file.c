@@ -227,13 +227,14 @@ chunkfs_open(struct inode * inode, struct file * file)
  */
 
 static int
-chunkfs_fsync_file(struct file *file, struct dentry *dentry, int datasync)
+chunkfs_fsync_file(struct file *file, loff_t start, loff_t end, int datasync)
 {
 	struct chunkfs_inode_info *ii = CHUNKFS_I(file->f_dentry->d_inode);
 	struct chunkfs_continuation *prev_cont = NULL;
 	struct chunkfs_continuation *next_cont;
 	struct dentry *client_dentry;
 	struct inode *client_inode;
+	struct file client_file;
 	int err = -EIO;
 
 	printk(KERN_ERR "%s()\n", __FUNCTION__);
@@ -241,14 +242,16 @@ chunkfs_fsync_file(struct file *file, struct dentry *dentry, int datasync)
 	/* XXX syncs all inodes instead of just ones in mem */
 	spin_lock(&ii->ii_continuations_lock);
 	while (1) {
-		err = chunkfs_get_next_cont(dentry, prev_cont, &next_cont);
+		err = chunkfs_get_next_cont(file->f_dentry, prev_cont, &next_cont);
 		if (err || (next_cont == NULL))
 			break;
 		client_dentry = next_cont->co_dentry;
 		client_inode = client_dentry->d_inode;
+
+		client_file.f_dentry = client_dentry;
+		client_file.f_inode = client_inode;
 		/* XXX error propagation */
-		err = client_inode->i_fop->fsync(NULL, client_dentry,
-						 datasync);
+		err = client_inode->i_fop->fsync(&client_file, start, end, datasync);
 		prev_cont = next_cont;
 	}
 	spin_unlock(&ii->ii_continuations_lock);
