@@ -147,7 +147,7 @@ int chunkfs_new_inode(struct super_block *, struct inode **);
 void chunkfs_start_inode(struct inode *inode, struct inode *client_inode,
 			 u64 chunk_id);
 struct inode *chunkfs_iget(struct super_block *sb, unsigned long ino);
-int chunkfs_write_inode(struct inode *, int);
+int chunkfs_write_inode(struct inode *inode, struct writeback_control *wbc);
 void chunkfs_copy_up_inode(struct inode *, struct inode *);
 
 /* symlink.c */

@@ -164,7 +164,7 @@ struct inode *chunkfs_iget(struct super_block *sb, unsigned long ino)
 	return;
 }
 
-int chunkfs_write_inode(struct inode *inode, int wait)
+int chunkfs_write_inode(struct inode *inode, struct writeback_control *wbc)
 {
 	struct inode *client_inode = get_client_inode(inode);
 	int err;
@@ -172,7 +172,7 @@ int chunkfs_write_inode(struct inode *inode, int wait)
 	copy_down_inode(inode, client_inode);
 
 	/* XXX will client inodes be written when evicted? think so */
-	err = client_inode->i_sb->s_op->write_inode(client_inode, wait);
+	err = client_inode->i_sb->s_op->write_inode(client_inode, wbc);
 
 	return err;
 }
