@@ -38,7 +38,7 @@ chunkfs_dir_llseek(struct file *file, loff_t offset, int origin)
 }
 
 static int
-chunkfs_readdir(struct file *file, void *dirent, filldir_t filldir)
+chunkfs_iterate(struct file *file, struct dir_context *ctx)
 {
 	struct file *client_file;
 	struct chunkfs_continuation *cont;
@@ -50,7 +50,7 @@ chunkfs_readdir(struct file *file, void *dirent, filldir_t filldir)
 	if (err)
 		return err;
 
-	err = client_file->f_op->readdir(client_file, dirent, filldir);
+	err = client_file->f_op->iterate(client_file, ctx);
 	/* If we read off the end, no problemo */
 	if (err == -ENODATA)
 		err = 0;
@@ -64,5 +64,5 @@ struct file_operations chunkfs_dir_fops = {
 	.llseek		= chunkfs_dir_llseek,
 	.read		= generic_read_dir,
 	.open		= chunkfs_open,
-	.readdir	= chunkfs_readdir,
+	.iterate	= chunkfs_iterate,
 };
