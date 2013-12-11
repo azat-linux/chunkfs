@@ -275,13 +275,8 @@ int chunkfs_setattr(struct dentry *dentry, struct iattr *attr)
 		error = inode_change_ok(client_inode, attr);
 		if (!error)
 			error = security_inode_setattr(client_dentry, attr);
-		if (!error) {
-			if ((ia_valid & ATTR_UID && attr->ia_uid != client_inode->i_uid) ||
-			    (ia_valid & ATTR_GID && attr->ia_gid != client_inode->i_gid))
-				error = DQUOT_TRANSFER(client_inode, attr) ? -EDQUOT : 0;
-			if (!error)
-				error = inode_setattr(client_inode, attr);
-		}
+		if (!error)
+			error = inode_setattr(client_inode, attr);
 	}
 	if (!error)
 		chunkfs_copy_up_inode(dentry->d_inode, client_inode);
