@@ -13,18 +13,11 @@
 #include "chunkfs_chunk.h"
 #include "chunkfs_i.h"
 
-int
-chunkfs_get_nlinks(struct inode *inode)
-{
-	/* XXX go through all client inodes */
-	return inode->i_nlink;
-}
-
 static void
 __copy_inode(struct inode *dst, struct inode *src)
 {
 	/* Copy data from one inode to another */
-	fsstack_copy_attr_all(dst, src, chunkfs_get_nlinks);
+	fsstack_copy_attr_all(dst, src);
 }
 
 void
