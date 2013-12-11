@@ -385,7 +385,7 @@ static struct super_operations chunkfs_sops = {
 	.statfs		= chunkfs_statfs,
 	.remount_fs	= chunkfs_remount,
 #endif
-	.clear_inode	= chunkfs_clear_inode,
+	.evict_inode	= chunkfs_clear_inode,
 #if 0
 	.show_options	= chunkfs_show_options,
 #endif
