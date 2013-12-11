@@ -19,8 +19,8 @@ void
 chunkfs_release_nd(struct dentry *dentry)
 {
 	struct nameidata *nd = get_client_nd(dentry);
-	dput(nd->dentry);
-	mntput(nd->mnt);
+	dput(nd->path.dentry);
+	mntput(nd->path.mnt);
 }
 
 /*
@@ -37,11 +37,11 @@ chunkfs_init_nd(struct inode *dir, struct dentry *dentry,
 	chunk = chunkfs_find_chunk(CHUNKFS_PI(dir->i_sb), chunk_id);
 	BUG_ON(!chunk); /* XXX */
 	/* Probably don't need dget/mntget */
-	nd->dentry = dget(client_dentry);
-	nd->mnt = mntget(chunk->ci_mnt);
+	nd->path.dentry = dget(client_dentry);
+	nd->path.mnt = mntget(chunk->ci_mnt);
 	printk(KERN_ERR "%s(): dentry %p name %s client_dentry %p mnt %s\n",
 	       __FUNCTION__, dentry, dentry->d_iname, client_dentry,
-	       nd->mnt->mnt_sb->s_type->name);
+	       nd->path.mnt->mnt_sb->s_type->name);
 }
 
 /*
@@ -289,7 +289,7 @@ chunkfs_lookup(struct inode * dir, struct dentry *dentry, struct nameidata *nd)
 		inode = NULL;
 	}
 	/* Hook up the client and parent dentries. */
-	chunkfs_add_dentry(dentry, client_dentry, client_nd->mnt);
+	chunkfs_add_dentry(dentry, client_dentry, client_nd->path.mnt);
 
 	printk(KERN_ERR "dentry %p name %s inode %p\n",
 	       dentry, dentry->d_iname, dentry->d_inode);

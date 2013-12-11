@@ -107,7 +107,7 @@ static inline struct nameidata *get_client_nd(struct dentry *dentry)
 static inline struct vfsmount *get_client_mnt(struct dentry *dentry)
 {
 	struct chunkfs_dentry_priv *dp = CHUNKFS_D(dentry);
-	return dp->dp_client_nd->mnt;
+	return dp->dp_client_nd->path.mnt;
 }
 
 #endif /* __KERNEL__ */

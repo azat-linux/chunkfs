@@ -94,7 +94,7 @@ chunkfs_read_client_sb(struct chunkfs_chunk_info *ci)
 	}
 	/* XXX locking XXX prevent unmount XXX ref count XXX XXX */
 	ci->ci_mnt = mntget(nd.path.mnt);
-	ci->ci_sb = nd.mnt->mnt_sb;
+	ci->ci_sb = nd.path.mnt->mnt_sb;
 	path_release(&nd);
 
 	return 0;
@@ -419,7 +419,7 @@ static int chunkfs_read_root(struct super_block *sb)
 	retval = path_lookup("/chunk1/root/", LOOKUP_FOLLOW, &nd);
 	if (retval)
 		goto out_dentry;
-	dentry = dget(nd.dentry);
+	dentry = dget(nd.path.dentry);
 	chunkfs_init_nd(inode, sb->s_root, dentry, ci->ci_chunk_id);
 	chunkfs_add_dentry(sb->s_root, dentry, nd.path.mnt);
 	path_release(&nd);
