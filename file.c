@@ -259,27 +259,6 @@ chunkfs_fsync_file(struct file *file, loff_t start, loff_t end, int datasync)
 	return err;
 }
 
-static void chunkfs_truncate(struct inode *inode)
-{
-	struct chunkfs_inode_info *ii = CHUNKFS_I(inode);
-	struct inode *prev_inode = NULL;
-	struct inode *next_inode;
-	int err;
-
-	printk(KERN_ERR "%s()\n", __FUNCTION__);
-
-	spin_lock(&ii->ii_continuations_lock);
-	/* XXX completely delete continuations */
-	while (1) {
-		err = chunkfs_get_next_inode(inode, prev_inode, &next_inode);
-		if (err || (next_inode == NULL))
-			break;
-		next_inode->i_op->truncate(next_inode);
-		prev_inode = next_inode;
-	}
-	spin_unlock(&ii->ii_continuations_lock);
-}
-
 int chunkfs_setattr(struct dentry *dentry, struct iattr *attr)
 {
 	struct inode *client_inode = get_client_inode(dentry->d_inode);
@@ -334,7 +313,6 @@ struct file_operations chunkfs_file_fops = {
 };
 
 struct inode_operations chunkfs_file_iops = {
-	.truncate	= chunkfs_truncate,
 	.setattr	= chunkfs_setattr,
 	.permission	= chunkfs_permission,
 };
