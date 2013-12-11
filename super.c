@@ -16,10 +16,10 @@
 #include <linux/init.h>
 #include <linux/blkdev.h>
 #include <linux/parser.h>
-#include <linux/smp_lock.h>
 #include <linux/vfs.h>
 #include <linux/mount.h>
 #include <linux/namei.h>
+#include <linux/mutex.h>
 
 #include <asm/uaccess.h>
 
@@ -28,6 +28,8 @@
 #include "chunkfs_dev.h"
 #include "chunkfs_chunk.h"
 #include "chunkfs_i.h"
+
+static DEFINE_MUTEX(chunkfs_kernel_mutex);
 
 static struct inode *chunkfs_alloc_inode(struct super_block *sb)
 {
@@ -91,7 +93,7 @@ chunkfs_read_client_sb(struct chunkfs_chunk_info *ci)
 		return retval;
 	}
 	/* XXX locking XXX prevent unmount XXX ref count XXX XXX */
-	ci->ci_mnt = mntget(nd.mnt);
+	ci->ci_mnt = mntget(nd.path.mnt);
 	ci->ci_sb = nd.mnt->mnt_sb;
 	path_release(&nd);
 
@@ -419,7 +421,7 @@ static int chunkfs_read_root(struct super_block *sb)
 		goto out_dentry;
 	dentry = dget(nd.dentry);
 	chunkfs_init_nd(inode, sb->s_root, dentry, ci->ci_chunk_id);
-	chunkfs_add_dentry(sb->s_root, dentry, nd.mnt);
+	chunkfs_add_dentry(sb->s_root, dentry, nd.path.mnt);
 	path_release(&nd);
 	return 0;
  out_dentry:
@@ -457,7 +459,7 @@ static int chunkfs_fill_super (struct super_block *sb, void *data, int silent)
 	struct chunkfs_pool_info *pi;
 	int retval = -EINVAL;
 
-	unlock_kernel();
+	mutex_unlock(&chunkfs_kernel_mutex);
 
 	printk(KERN_ERR "%s\n", __FUNCTION__);
 
@@ -482,10 +484,10 @@ static int chunkfs_fill_super (struct super_block *sb, void *data, int silent)
 	chunkfs_setup_super (sb, pi, sb->s_flags & MS_RDONLY);
 
 	printk(KERN_ERR "chunkfs: mounted file system\n");
-	lock_kernel();
+	mutex_lock(&chunkfs_kernel_mutex);
 	return 0;
  out:
-	lock_kernel();
+	mutex_lock(&chunkfs_kernel_mutex);
 	BUG_ON(retval == 0);
 	printk(KERN_ERR "%s() failed! err %d\n", __FUNCTION__, retval);
 	return retval;
