@@ -171,7 +171,7 @@ void chunkfs_copy_down_nd(struct nameidata *nd, struct nameidata *client_nd);
 /* file.c */
 
 int chunkfs_setattr(struct dentry *dentry, struct iattr *attr);
-int chunkfs_permission(struct inode *, int, struct nameidata *);
+int chunkfs_permission(struct inode *, int);
 int chunkfs_open(struct inode *, struct file *);
 
 struct chunkfs_continuation;

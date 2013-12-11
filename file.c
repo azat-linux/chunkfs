@@ -310,20 +310,18 @@ int chunkfs_setattr(struct dentry *dentry, struct iattr *attr)
 }
 
 /*
- * XXX probably need to change the nd.
+ * XXX probably need to change the nd, that was here before
  */
 
-int chunkfs_permission(struct inode *inode, int submask,
-			      struct nameidata *nd)
+int chunkfs_permission(struct inode *inode, int submask)
 {
 	struct inode *client_inode = get_client_inode(inode);
 	int err;
 
 	if (client_inode->i_op->permission)
-		err = client_inode->i_op->permission(client_inode,
-			submask, nd);
+		err = client_inode->i_op->permission(client_inode, submask);
 	else
-		err = generic_permission(client_inode, submask, NULL);
+		err = generic_permission(client_inode, submask);
 	return err;
 }
 
