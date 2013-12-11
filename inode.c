@@ -130,13 +130,15 @@ struct inode *chunkfs_iget(struct super_block *sb, unsigned long ino)
 	struct inode *client_inode;
 	struct super_block *client_sb;
 	struct inode *inode;
+	u64 chunk_id;
+	unsigned long client_ino;
 
 	inode = iget_locked(sb, ino);
 	if (!inode)
 		return ERR_PTR(-ENOMEM);
 
-	u64 chunk_id = UINO_TO_CHUNK_ID(inode->i_ino);
-	unsigned long client_ino = UINO_TO_INO(inode->i_ino);
+	chunk_id = UINO_TO_CHUNK_ID(inode->i_ino);
+	client_ino = UINO_TO_INO(inode->i_ino);
 
 	printk (KERN_ERR "%s() reading ino %0lx client ino %0lx chunk_id "
 		"%0llx count %d\n",
@@ -148,13 +150,18 @@ struct inode *chunkfs_iget(struct super_block *sb, unsigned long ino)
 	BUG_ON(ci == NULL); /* XXX */
 
 	client_sb = ci->ci_sb;
-	client_inode = iget(client_sb, client_ino);
+	client_inode = iget_locked(client_sb, client_ino);
 	if (is_bad_inode(client_inode)) {
 		/* XXX should do something here */
-		return;
+		BUG();
+		return 0;
 	}
 	chunkfs_start_inode(inode, client_inode, chunk_id);
-	return;
+
+	unlock_new_inode(inode);
+	unlock_new_inode(client_inode);
+
+	return 0;
 }
 
 int chunkfs_write_inode(struct inode *inode, struct writeback_control *wbc)
