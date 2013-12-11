@@ -74,8 +74,8 @@ static int
 chunkfs_read_client_sb(struct chunkfs_chunk_info *ci)
 {
 	/* XXX XXX XXX There aren't enough XXX's in the world XXX XXX */
-	char *path_prefix = "/chunk";
-	char mount_path[strlen(path_prefix + 10)];
+	const char *path_prefix = "/chunk";
+	char mount_path[sizeof(path_prefix + 10)];
 	struct nameidata nd;
 	int retval;
 
