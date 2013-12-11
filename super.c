@@ -19,6 +19,7 @@
 #include <linux/vfs.h>
 #include <linux/mount.h>
 #include <linux/namei.h>
+#include <linux/dcache.h>
 #include <linux/mutex.h>
 
 #include <asm/uaccess.h>
@@ -412,7 +413,7 @@ static int chunkfs_read_root(struct super_block *sb)
 
 	inode = chunkfs_iget(sb, ino);
 	BUG_ON(!inode);
-	sb->s_root = d_alloc_root(inode);
+	sb->s_root = d_make_root(inode);
 	if (!sb->s_root) {
 		retval = -ENOMEM;
 		goto out_iput;
