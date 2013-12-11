@@ -357,13 +357,16 @@ static void chunkfs_put_super (struct super_block *sb)
 	return;
 }
 
-static void
-chunkfs_write_super (struct super_block * sb)
+static int
+chunkfs_write_super (struct super_block *sb, int wait)
 {
-	if (mutex_trylock(&sb->s_lock) != 0)
-		BUG();
+	/* TODO: another mutex in private part of sb. */
+	mutex_lock(&chunkfs_kernel_mutex);
 	chunkfs_commit_super(sb, 1);
-	sb->s_dirt = 0;
+	/* TODO: it is clear now */
+	mutex_unlock(&chunkfs_kernel_mutex);
+
+	return 0;
 }
 
 
@@ -377,7 +380,8 @@ static struct super_operations chunkfs_sops = {
 	.delete_inode	= chunkfs_delete_inode,
 #endif
 	.put_super	= chunkfs_put_super,
-	.write_super	= chunkfs_write_super,
+	/* TODO: sync the whole fs, not just sb. */
+	.sync_fs	= chunkfs_write_super,
 #if 0
 	.sync_fs	= chunkfs_sync_fs,
 	.write_super_lockfs = chunkfs_write_super_lockfs,
