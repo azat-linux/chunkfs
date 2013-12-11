@@ -373,7 +373,6 @@ chunkfs_write_super (struct super_block *sb, int wait)
 static struct super_operations chunkfs_sops = {
 	.alloc_inode	= chunkfs_alloc_inode,
 	.destroy_inode	= chunkfs_destroy_inode,
-	.read_inode	= chunkfs_read_inode,
 	.write_inode	= chunkfs_write_inode,
 #if 0 /* XXX Totally unimplemented at present */
 	.dirty_inode	= chunkfs_dirty_inode,
@@ -411,7 +410,8 @@ static int chunkfs_read_root(struct super_block *sb)
 	struct dentry *dentry;
 	int retval;
 
-	inode = iget(sb, ino);
+	inode = chunkfs_iget(sb, ino);
+	BUG_ON(!inode);
 	sb->s_root = d_alloc_root(inode);
 	if (!sb->s_root) {
 		retval = -ENOMEM;

@@ -130,13 +130,18 @@ chunkfs_start_inode(struct inode *inode, struct inode *client_inode,
  * inode too.
  */
 
-void
-chunkfs_read_inode(struct inode *inode)
+struct inode *chunkfs_iget(struct super_block *sb, unsigned long ino)
 {
-	struct chunkfs_pool_info *pi = CHUNKFS_PI(inode->i_sb);
+	struct chunkfs_pool_info *pi;
 	struct chunkfs_chunk_info *ci;
 	struct inode *client_inode;
 	struct super_block *client_sb;
+	struct inode *inode;
+
+	inode = iget_locked(sb, ino);
+	if (!inode)
+		return ERR_PTR(-ENOMEM);
+
 	u64 chunk_id = UINO_TO_CHUNK_ID(inode->i_ino);
 	unsigned long client_ino = UINO_TO_INO(inode->i_ino);
 

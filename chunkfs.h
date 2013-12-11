@@ -146,7 +146,7 @@ extern struct inode_operations chunkfs_file_iops;
 int chunkfs_new_inode(struct super_block *, struct inode **);
 void chunkfs_start_inode(struct inode *inode, struct inode *client_inode,
 			 u64 chunk_id);
-void chunkfs_read_inode(struct inode *);
+struct inode *chunkfs_iget(struct super_block *sb, unsigned long ino);
 int chunkfs_write_inode(struct inode *, int);
 void chunkfs_copy_up_inode(struct inode *, struct inode *);
 

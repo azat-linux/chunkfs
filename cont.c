@@ -307,7 +307,8 @@ chunkfs_get_next_inode(struct inode *head_inode,
 	/* Starting the list... */
 	if (prev_inode == NULL) {
 		prev_inode = get_client_inode(head_inode);
-		next_inode = iget(prev_inode->i_sb, prev_inode->i_ino);
+		next_inode = chunkfs_iget(prev_inode->i_sb, prev_inode->i_ino);
+		BUG_ON(!next_inode);
 		goto found_inode;
 	} else
 		iput(prev_inode);
@@ -326,7 +327,8 @@ chunkfs_get_next_inode(struct inode *head_inode,
 	       next_uino, next_ino, chunk_id);
 	ci = chunkfs_find_chunk(pi, chunk_id);
 	BUG_ON(ci == NULL); /* XXX */
-	next_inode = iget(ci->ci_sb, next_ino);
+	next_inode = chunkfs_iget(ci->ci_sb, next_ino);
+	BUG_ON(!next_inode);
  found_inode:
 	if (is_bad_inode(next_inode))
 		return -EIO;
