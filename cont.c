@@ -232,11 +232,11 @@ chunkfs_get_next_cont(struct dentry *head_dentry,
 		from_ino = UINO_TO_INO(prev_cont->co_uino);
 		sprintf(path, "/chunk%llu/%llu/%llu",
 			chunk_id, from_chunk_id, from_ino);
-		err = path_lookup(path, 0, &nd);
+		err = kern_path(path, 0, &nd.path);
 		if (err)
 			return -ENOENT;
 		client_dentry = dget(nd.dentry);
-		path_release(&nd);
+		path_put(&nd.path);
 	}
 
 	/* Now we know the dentry of the continuation we want. */
