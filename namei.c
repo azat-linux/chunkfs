@@ -60,8 +60,8 @@ chunkfs_init_nd(struct inode *dir, struct dentry *dentry,
 static void
 __chunkfs_copy_nd(struct nameidata *dst, struct nameidata *src)
 {
-	dst->intent.open.flags = src->intent.open.flags;
-	dst->intent.open.create_mode = src->intent.open.create_mode;
+	dst->flags = src->flags;
+	dst->seq   = src->seq;
 	dst->depth = src->depth;
 	dst->saved_names[dst->depth] = src->saved_names[dst->depth];
 }
