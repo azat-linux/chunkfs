@@ -15,6 +15,8 @@
 #include "chunkfs_chunk.h"
 #include "chunkfs_i.h"
 
+#include <linux/mount.h>
+
 void
 chunkfs_release_nd(struct dentry *dentry)
 {
