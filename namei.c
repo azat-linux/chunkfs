@@ -225,7 +225,7 @@ chunkfs_create(struct inode *dir, struct dentry *dentry, int mode,
 }
 
 static struct dentry *
-chunkfs_lookup(struct inode * dir, struct dentry *dentry, struct nameidata *nd)
+chunkfs_lookup(struct inode * dir, struct dentry *dentry, unsigned int flags)
 {
 	struct inode *client_dir = get_client_inode(dir);
 	u64 chunk_id = UINO_TO_CHUNK_ID(dir->i_ino);
@@ -253,7 +253,7 @@ chunkfs_lookup(struct inode * dir, struct dentry *dentry, struct nameidata *nd)
 	 * Fill out the client dentry.
 	 */
 	new_dentry = client_dir->i_op->lookup(client_dir, client_dentry,
-					      client_nd);
+					      client_nd->flags);
 	/*
 	 * Possible return values:
 	 *
