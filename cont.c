@@ -356,10 +356,10 @@ chunkfs_create_continuation(struct file *file, loff_t *ppos,
 	u64 from_chunk_id;
 	u64 to_chunk_id;
 	u64 from_ino;
-	struct nameidata file_nd;
 	char path[PATH_MAX];
 	struct dentry *dentry;
 	struct chunkfs_cont_data cd;
+	struct filename filename = { .name = path };
 	int err;
 
 	printk(KERN_ERR "%s()\n", __FUNCTION__);
@@ -387,13 +387,16 @@ chunkfs_create_continuation(struct file *file, loff_t *ppos,
 		from_ino);
 
 	/* Create the file */
-	err = open_namei(0 /* XXX */, path, O_CREAT | O_RDWR,
-			 (MAY_WRITE | MAY_READ | MAY_APPEND), &file_nd);
-	printk(KERN_ERR "open_namei for %s: err %d\n", path, err);
-	if (err)
+	new_file = file_open_name(&filename, O_CREAT | O_RDWR, MAY_WRITE | MAY_READ | MAY_APPEND);
+	if (IS_ERR(new_file)) {
+		err = PTR_ERR(new_file);
+		printk(KERN_ERR "open_namei for %s: err %d\n", path, err);
+		printk(KERN_ERR "dentry_open: err %d\n", err);
 		goto out;
+	}
+	*client_file = new_file;
 
-	dentry = dget(file_nd.path.dentry);
+	dentry = dget(new_file->f_dentry);
 
 	/* Fill in next/prev/etc. data */
 	cd.cd_next = 0;
@@ -408,15 +411,9 @@ chunkfs_create_continuation(struct file *file, loff_t *ppos,
 	/* Now! It's all in the inode and we can load it like normal. */
 	err = load_continuation(file->f_dentry->d_inode, dentry,
 				to_chunk_id, &new_cont);
-	new_file = dentry_open(&file_nd.path, file->f_flags, file->f_cred);
-	if (IS_ERR(new_file)) {
-		err = PTR_ERR(new_file);
-		printk(KERN_ERR "dentry_open: err %d\n", err);
-		goto out;
-	}
+
 	chunkfs_copy_down_file(file, ppos, new_file, new_cont->co_cd.cd_start);
 
-	*client_file = new_file;
 	*ret_cont = new_cont;
 
 	printk(KERN_ERR "%s(): start %llu returning %d\n",
