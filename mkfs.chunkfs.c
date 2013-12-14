@@ -5,23 +5,23 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <error.h>
 #include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include <time.h>
 
-#include <asm/byteorder.h>
+#include <uapi/linux/magic.h>
+// TODO: add #ifdef
+#include <linux/byteorder/little_endian.h>
 
 #include "chunkfs.h"
 #include "chunkfs_pool.h"
 #include "chunkfs_dev.h"
 #include "chunkfs_chunk.h"
 #include "chunkfs_i.h"
+
+#define exit _exit
 
 /* Compile time test that structures have not outgrown blocks. */
 

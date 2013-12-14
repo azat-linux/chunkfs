@@ -171,7 +171,7 @@ chunkfs_write(struct file *file, const char __user *buf, size_t len,
 	ssize_t size;
 	int err;
 
-	printk(KERN_ERR "%s() pos %llu len %u\n",
+	printk(KERN_ERR "%s() pos %llu len %zu\n",
 	       __FUNCTION__, *ppos, len);
 
 	err = chunkfs_open_cont_file(file, ppos, &client_file, &cont);
@@ -190,7 +190,7 @@ chunkfs_write(struct file *file, const char __user *buf, size_t len,
 
 	chunkfs_close_cont_file(file, client_file, cont);
 
-	printk(KERN_ERR "%s() pos %llu len %u, returning size %u\n",
+	printk(KERN_ERR "%s() pos %llu len %zu, returning size %zu\n",
 	       __FUNCTION__, *ppos, len, size);
 
 	return size;
@@ -263,7 +263,6 @@ int chunkfs_setattr(struct dentry *dentry, struct iattr *attr)
 {
 	struct inode *client_inode = get_client_inode(dentry->d_inode);
 	struct dentry *client_dentry = get_client_dentry(dentry);
-	unsigned int ia_valid = attr->ia_valid;
 	int error;
 
 	printk(KERN_ERR "%s()\n", __FUNCTION__);

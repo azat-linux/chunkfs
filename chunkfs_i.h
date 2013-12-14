@@ -4,7 +4,9 @@
  * (C) 2007-2008 Valerie Henson <val@nmt.edu>
  */
 
+#ifdef __KERNEL__
 #include <linux/namei.h>
+#endif
 
 
 #define	CHUNKFS_INODE_MAGIC	0x10de10de

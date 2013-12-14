@@ -11,7 +11,9 @@
 /* XXX Do above _H stuff for other header files */
 
 #include <linux/types.h>
+#ifdef __KERNEL__
 #include <linux/fs.h>
+#endif
 #include <linux/limits.h>
 
 /*

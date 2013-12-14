@@ -36,12 +36,12 @@ struct chunkfs_pool {
 #define	CHUNKFS_POOL_BLK	8
 #define	CHUNKFS_POOL_OFFSET	(CHUNKFS_POOL_BLK * CHUNKFS_BLK_SIZE)
 
+#ifdef __KERNEL__
+
 static inline int check_pool(struct chunkfs_pool *pool)
 {
 	return check_metadata(pool, sizeof(*pool), CHUNKFS_SUPER_MAGIC);
 }
-
-#ifdef __KERNEL__
 
 #include <linux/buffer_head.h>
 
