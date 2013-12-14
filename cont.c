@@ -408,7 +408,7 @@ chunkfs_create_continuation(struct file *file, loff_t *ppos,
 	/* Now! It's all in the inode and we can load it like normal. */
 	err = load_continuation(file->f_dentry->d_inode, dentry,
 				to_chunk_id, &new_cont);
-	new_file = dentry_open(dentry, file_nd.path.mnt, file->f_flags);
+	new_file = dentry_open(&file_nd.path, file->f_flags, file->f_cred);
 	if (IS_ERR(new_file)) {
 		err = PTR_ERR(new_file);
 		printk(KERN_ERR "dentry_open: err %d\n", err);
