@@ -235,7 +235,7 @@ chunkfs_get_next_cont(struct dentry *head_dentry,
 		err = kern_path(path, 0, &nd.path);
 		if (err)
 			return -ENOENT;
-		client_dentry = dget(nd.dentry);
+		client_dentry = dget(nd.path.dentry);
 		path_put(&nd.path);
 	}
 
@@ -393,7 +393,7 @@ chunkfs_create_continuation(struct file *file, loff_t *ppos,
 	if (err)
 		goto out;
 
-	dentry = dget(file_nd.dentry);
+	dentry = dget(file_nd.path.dentry);
 
 	/* Fill in next/prev/etc. data */
 	cd.cd_next = 0;
@@ -408,7 +408,7 @@ chunkfs_create_continuation(struct file *file, loff_t *ppos,
 	/* Now! It's all in the inode and we can load it like normal. */
 	err = load_continuation(file->f_dentry->d_inode, dentry,
 				to_chunk_id, &new_cont);
-	new_file = dentry_open(dentry, file_nd.mnt, file->f_flags);
+	new_file = dentry_open(dentry, file_nd.path.mnt, file->f_flags);
 	if (IS_ERR(new_file)) {
 		err = PTR_ERR(new_file);
 		printk(KERN_ERR "dentry_open: err %d\n", err);
