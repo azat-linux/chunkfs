@@ -176,7 +176,7 @@ chunkfs_add_dentry(struct dentry *dentry, struct dentry *client_dentry,
 }
 
 static int
-chunkfs_create(struct inode *dir, struct dentry *dentry, int mode,
+chunkfs_create(struct inode *dir, struct dentry *dentry, umode_t mode,
 	       bool excl)
 {
 	struct inode *client_dir = get_client_inode(dir);
@@ -413,7 +413,7 @@ chunkfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname)
 }
 
 static int
-chunkfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
+chunkfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 {
 	struct inode *client_dir = get_client_inode(dir);
 	struct inode *client_inode;
@@ -468,7 +468,7 @@ chunkfs_rmdir(struct inode *dir, struct dentry *dentry)
 }
 
 static int
-chunkfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
+chunkfs_mknod(struct inode *dir, struct dentry *dentry, umode_t mode, dev_t dev)
 {
 	struct inode *client_dir = get_client_inode(dir);
 	struct dentry *client_dentry = get_client_dentry(dentry);
