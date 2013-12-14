@@ -177,7 +177,7 @@ chunkfs_add_dentry(struct dentry *dentry, struct dentry *client_dentry,
 
 static int
 chunkfs_create(struct inode *dir, struct dentry *dentry, int mode,
-	       struct nameidata *nd)
+	       bool excl)
 {
 	struct inode *client_dir = get_client_inode(dir);
 	struct dentry *client_dentry = get_client_dentry(dentry);
@@ -185,6 +185,7 @@ chunkfs_create(struct inode *dir, struct dentry *dentry, int mode,
 	u64 chunk_id = UINO_TO_CHUNK_ID(dir->i_ino);
 	struct inode *inode;
 	int err;
+	struct nameidata nd;
 
 	printk(KERN_ERR "%s(): dir ino %0lx i_count %d\n",
 	       __FUNCTION__, dir->i_ino, atomic_read(&dir->i_count));
@@ -193,7 +194,13 @@ chunkfs_create(struct inode *dir, struct dentry *dentry, int mode,
 	if (err)
 		goto out;
 
-	chunkfs_copy_down_nd(nd, client_nd);
+	// TODO: or d_flags OR i_size_seqcount ?
+	nd.flags = dir->i_flags;
+	// nd.seq = ;
+	// nd.depth = ;
+	// nd.saved_names[nd.depth] = ;
+
+	chunkfs_copy_down_nd(&nd, client_nd);
 
 	err = client_dir->i_op->create(client_dir, client_dentry, mode,
 				       client_nd);
@@ -205,7 +212,7 @@ chunkfs_create(struct inode *dir, struct dentry *dentry, int mode,
 		goto out_inode;
 	chunkfs_start_inode(inode, client_dentry->d_inode, chunk_id);
 	chunkfs_copy_up_inode(dir, client_dir);
-	chunkfs_copy_up_nd(nd, client_nd);
+	chunkfs_copy_up_nd(&nd, client_nd);
 
 	/* Now put our new inode into the dentry */
 	d_instantiate(dentry, inode);
