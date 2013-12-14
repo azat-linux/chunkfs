@@ -11,6 +11,6 @@ chunkfs-y	:= super.o inode.o dir.o file.o namei.o symlink.o cont.o
 #
 HOST_EXTRACFLAGS += -I$(src)/../../include -static
 
-hostprogs-$(CONFIG_CHUNK_FS)	:= mkfs.chunkfs mount_chunkfs write_pattern
+hostprogs-$(CONFIG_CHUNK_FS)	:= mkfs.chunkfs write_pattern
 
 always          := $(hostprogs-y) $(hostprogs-m)
