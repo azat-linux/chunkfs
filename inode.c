@@ -125,7 +125,6 @@ chunkfs_start_inode(struct inode *inode, struct inode *client_inode,
 
 struct inode *chunkfs_iget(struct super_block *sb, unsigned long ino)
 {
-	struct chunkfs_pool_info *pi;
 	struct chunkfs_chunk_info *ci;
 	struct inode *client_inode;
 	struct super_block *client_sb;
@@ -146,7 +145,7 @@ struct inode *chunkfs_iget(struct super_block *sb, unsigned long ino)
 		atomic_read(&inode->i_count));
 
 	/* XXX should be chunkfs_get_sb */
-	ci = chunkfs_find_chunk(pi, chunk_id);
+	ci = chunkfs_find_chunk(sb->s_fs_info, chunk_id);
 	BUG_ON(ci == NULL); /* XXX */
 
 	client_sb = ci->ci_sb;
