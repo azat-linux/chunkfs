@@ -127,6 +127,7 @@ get_cont_data_inode(struct inode *inode, struct chunkfs_cont_data *cd)
 	int err;
 
 	fake_dentry.d_inode = inode;
+	fake_dentry.d_sb = inode->i_sb;
 	err = get_cont_data(&fake_dentry, cd);
 	return err;
 }
