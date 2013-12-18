@@ -30,7 +30,8 @@ chunkfs_copy_up_inode(struct inode *inode, struct inode *client_inode)
 	__copy_inode(inode, client_inode);
 
 	while (1) {
-		chunkfs_get_next_inode(inode, prev_inode, &next_inode);
+		if (chunkfs_get_next_inode(inode, prev_inode, &next_inode))
+			break;
 		if (next_inode == NULL)
 			break;
 		/* XXX doesn't do holey files right */
