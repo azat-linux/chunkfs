@@ -412,7 +412,7 @@ static int chunkfs_read_root(struct super_block *sb)
 	int retval;
 
 	inode = iget_locked(sb, ino);
-	BUG_ON(!inode);
+	BUG_ON(!inode || !S_ISDIR(inode->i_mode));
 	sb->s_root = d_make_root(inode);
 	if (!sb->s_root) {
 		retval = -ENOMEM;
