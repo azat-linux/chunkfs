@@ -411,7 +411,7 @@ static int chunkfs_read_root(struct super_block *sb)
 	struct dentry *dentry;
 	int retval;
 
-	inode = chunkfs_iget(sb, ino);
+	inode = iget_locked(sb, ino);
 	BUG_ON(!inode);
 	sb->s_root = d_make_root(inode);
 	if (!sb->s_root) {
@@ -428,6 +428,7 @@ static int chunkfs_read_root(struct super_block *sb)
 	chunkfs_init_nd(inode, sb->s_root, dentry, ci->ci_chunk_id);
 	chunkfs_add_dentry(sb->s_root, dentry, nd.path.mnt);
 	path_put(&nd.path);
+	unlock_new_inode(inode);
 	return 0;
  out_dentry:
 	chunkfs_free_dentry(sb->s_root);
