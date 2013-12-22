@@ -412,6 +412,15 @@ static int chunkfs_read_root(struct super_block *sb)
 	int retval;
 
 	inode = iget_locked(sb, ino);
+	/**
+	 * Firstly we mustn't use umask with 0777,
+	 * and secondly, and more strict, we mustn't set i_mode of inode here,
+	 * this must be done in mkfs for chunkfs,
+	 *
+	 * But to do it fast, just set it here, to avoid kernel thinks that this mount
+	 * is invald
+	 */
+	inode->i_mode = S_IFDIR | 0777;
 	BUG_ON(!inode || !S_ISDIR(inode->i_mode));
 	sb->s_root = d_make_root(inode);
 	if (!sb->s_root) {
