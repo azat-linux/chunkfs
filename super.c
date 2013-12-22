@@ -479,6 +479,7 @@ static int chunkfs_fill_super (struct super_block *sb, void *data, int silent)
 		goto out;
 	sb->s_fs_info = pi;
 
+	/* TODO: chunkfs set sb->s_maxbytes to negative value (-1)*/
 	sb->s_maxbytes = ~0ULL;
 	sb->s_op = &chunkfs_sops;
 
