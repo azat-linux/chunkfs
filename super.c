@@ -427,7 +427,6 @@ static int chunkfs_read_root(struct super_block *sb)
 	inode->i_mode = S_IFDIR | 0777;
 	inode->i_size = PAGE_SIZE;
 	inode_init_owner(inode, NULL, inode->i_mode);
-	d_add(sb->s_root, inode);
 	BUG_ON(!inode || !S_ISDIR(inode->i_mode));
 
 	sb->s_root = d_make_root(inode);
@@ -438,6 +437,8 @@ static int chunkfs_read_root(struct super_block *sb)
 	retval = chunkfs_init_dentry(sb->s_root);
 	if (retval)
 		goto out_dput;
+	d_add(sb->s_root, inode);
+
 	retval = kern_path("/chunk1/root/", LOOKUP_FOLLOW, &nd.path);
 	if (retval)
 		goto out_dentry;
