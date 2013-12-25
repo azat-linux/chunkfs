@@ -426,7 +426,10 @@ static int chunkfs_read_root(struct super_block *sb)
 	 */
 	inode->i_mode = S_IFDIR | 0777;
 	inode->i_size = PAGE_SIZE;
+	inode_init_owner(inode, NULL, inode->i_mode);
+	d_add(sb->s_root, inode);
 	BUG_ON(!inode || !S_ISDIR(inode->i_mode));
+
 	sb->s_root = d_make_root(inode);
 	if (!sb->s_root) {
 		retval = -ENOMEM;
