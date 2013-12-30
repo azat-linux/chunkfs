@@ -522,11 +522,24 @@ static struct dentry *chunkfs_mount(struct file_system_type *fs_type,
 	return mount_bdev(fs_type, flags, dev_name, data, chunkfs_fill_super);
 }
 
+static void chunkfs_kill_super(struct super_block *sb)
+{
+	struct block_device *bdev = sb->s_bdev;
+	fmode_t mode = sb->s_mode;
+
+	bdev->bd_super = NULL;
+	// because of bug
+	// generic_shutdown_super(sb);
+	sync_blockdev(bdev);
+	WARN_ON_ONCE(!(mode & FMODE_EXCL));
+	blkdev_put(bdev, mode | FMODE_EXCL);
+}
+
 static struct file_system_type chunkfs_fs_type = {
 	.owner		= THIS_MODULE,
 	.name		= "chunkfs",
 	.mount		= chunkfs_mount,
-	.kill_sb	= kill_block_super,
+	.kill_sb	= chunkfs_kill_super,
 	.fs_flags	= FS_REQUIRES_DEV,
 };
 
