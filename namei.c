@@ -234,7 +234,7 @@ chunkfs_create(struct inode *dir, struct dentry *dentry, umode_t mode,
 static struct dentry *
 chunkfs_lookup(struct inode * dir, struct dentry *dentry, unsigned int flags)
 {
-	struct inode *client_dir = get_client_inode(dir);
+	struct inode *client_dir = dir->i_ino == dir->i_sb->s_root->d_inode->i_ino ? get_client_inode(dir) : dir;
 	u64 chunk_id = UINO_TO_CHUNK_ID(dir->i_ino);
 	struct dentry *client_dentry;
 	struct dentry *new_dentry;
@@ -254,13 +254,14 @@ chunkfs_lookup(struct inode * dir, struct dentry *dentry, unsigned int flags)
 	if (IS_ERR(client_dentry))
 		goto out_dentry;
 
+	/* XXX What if we have root inode here ? */
 	chunkfs_init_nd(dir, dentry, client_dentry, chunk_id);
 	client_nd = get_client_nd(dentry);
 	/*
 	 * Fill out the client dentry.
 	 */
 	new_dentry = client_dir->i_op->lookup(client_dir, client_dentry,
-					      client_nd->flags);
+			client_nd->flags);
 	/*
 	 * Possible return values:
 	 *
