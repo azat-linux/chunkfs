@@ -139,6 +139,11 @@ static inline int check_metadata(void *buf, unsigned int size, __u32 expected_ma
 
 #ifdef __KERNEL__
 
+static inline int CHUNKFS_ROOT_INODE(struct inode *inode)
+{
+	return inode->i_ino == inode->i_sb->s_root->d_inode->i_ino;
+}
+
 /* dir.c */
 extern struct file_operations chunkfs_dir_fops;
 
