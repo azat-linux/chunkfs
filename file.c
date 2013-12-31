@@ -203,7 +203,7 @@ chunkfs_write(struct file *file, const char __user *buf, size_t len,
  */
 
 int
-chunkfs_open(struct inode * inode, struct file * file)
+chunkfs_open(struct inode *inode, struct file *filp)
 {
 	struct file *client_file;
 	struct chunkfs_continuation *cont;
@@ -212,10 +212,14 @@ chunkfs_open(struct inode * inode, struct file * file)
 
 	printk(KERN_ERR "%s()\n", __FUNCTION__);
 
-	err = chunkfs_open_cont_file(file, &dummy_pos, &client_file, &cont);
+	/* For root inode we don't need chunk-handling */
+	if (inode->i_ino == inode->i_sb->s_root->d_inode->i_ino)
+		return generic_file_open(inode, filp);
+
+	err = chunkfs_open_cont_file(filp, &dummy_pos, &client_file, &cont);
 	if (err)
 		goto out;
-	chunkfs_close_cont_file(file, client_file, cont);
+	chunkfs_close_cont_file(filp, client_file, cont);
 	return 0;
  out:
 	printk(KERN_ERR "%s() returning %d\n", __FUNCTION__, err);

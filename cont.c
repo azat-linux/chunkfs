@@ -32,7 +32,7 @@ get_set_cont_data(struct dentry *dentry, char *name, u64 value,
 	/* Make our "user.name" xattr name */
 	sprintf(full_name, "%s%s", prefix, name);
 	if (type == 0) {
-	        size = generic_getxattr(dentry, full_name, value_str,
+		size = generic_getxattr(dentry, full_name, value_str,
 				sizeof(value_str));
 		if (size >= 0) {
 			/* No automatic null termination... */
