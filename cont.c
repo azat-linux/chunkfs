@@ -149,7 +149,7 @@ load_continuation(struct inode *head_inode, struct dentry *client_dentry,
 
 	printk(KERN_ERR "%s() chunk_id %llu\n", __FUNCTION__, chunk_id);
 
-	cont = kzalloc(sizeof(*cont), GFP_KERNEL);
+	cont = kzalloc(sizeof(*cont), GFP_ATOMIC);
 	if (cont == NULL)
 		return -ENOMEM;
 
