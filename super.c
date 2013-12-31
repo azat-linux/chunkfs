@@ -411,23 +411,13 @@ static int chunkfs_read_root(struct super_block *sb)
 	struct dentry *dentry;
 	int retval;
 
-	inode = iget_locked(sb, ino);
-	/**
-	 * TODO(XXX):
-	 *
-	 * Firstly we mustn't use umask with 0777,
-	 * and secondly, and more strict, we mustn't set i_mode of inode here,
-	 * this must be done in mkfs for chunkfs,
-	 *
-	 * But to do it fast, just set it here, to avoid kernel thinks that this mount
-	 * is invald
-	 *
-	 * And we surely can't change i_size in such way.
-	 */
-	inode->i_mode = S_IFDIR | 0777;
-	inode->i_size = PAGE_SIZE;
-	inode_init_owner(inode, NULL, inode->i_mode);
-	BUG_ON(!inode || !S_ISDIR(inode->i_mode));
+	inode = new_inode(sb);
+	inode->i_ino = ino;
+	inode->i_sb = sb;
+	inode->i_op = &chunkfs_dir_iops;
+	inode->i_fop = &chunkfs_dir_fops;
+	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+	inode_init_owner(inode, NULL, S_IFDIR);
 
 	sb->s_root = d_make_root(inode);
 	if (!sb->s_root) {
@@ -444,7 +434,6 @@ static int chunkfs_read_root(struct super_block *sb)
 	chunkfs_init_nd(inode, sb->s_root, dentry, ci->ci_chunk_id);
 	chunkfs_add_dentry(sb->s_root, dentry, nd.path.mnt);
 	path_put(&nd.path);
-	unlock_new_inode(inode);
 	return 0;
  out_dentry:
 	chunkfs_free_dentry(sb->s_root);
@@ -452,7 +441,7 @@ static int chunkfs_read_root(struct super_block *sb)
 	dput(sb->s_root);
  out_iput:
 	iput(inode);
-	printk(KERN_ERR "%s() path lookup failed\n", __FUNCTION__);
+	printk(KERN_ERR "%s() allocation of root inode failed\n", __FUNCTION__);
 	return retval;
 }
 
