@@ -260,8 +260,11 @@ chunkfs_lookup(struct inode * dir, struct dentry *dentry, unsigned int flags)
 	/*
 	 * Fill out the client dentry.
 	 */
-	new_dentry = client_dir->i_op->lookup(client_dir, client_dentry,
-			client_nd->flags);
+	if (client_dir->i_op->lookup == chunkfs_lookup)
+		new_dentry = client_dentry;
+	else
+		new_dentry = client_dir->i_op->lookup(client_dir, client_dentry,
+				client_nd->flags);
 	/*
 	 * Possible return values:
 	 *
