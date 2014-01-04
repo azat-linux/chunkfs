@@ -414,8 +414,6 @@ static int chunkfs_read_root(struct super_block *sb)
 	inode = new_inode(sb);
 	inode->i_ino = ino;
 	inode->i_sb = sb;
-	inode->i_op = &chunkfs_dir_iops;
-	inode->i_fop = &chunkfs_dir_fops;
 	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
 	inode_init_owner(inode, NULL, S_IFDIR);
 
