@@ -136,6 +136,8 @@ struct inode *chunkfs_iget(struct super_block *sb, unsigned long ino)
 	inode = iget_locked(sb, ino);
 	if (!inode)
 		return ERR_PTR(-ENOMEM);
+	if (!(inode->i_state & I_NEW))
+		return 0;
 
 	chunk_id = UINO_TO_CHUNK_ID(inode->i_ino);
 	client_ino = UINO_TO_INO(inode->i_ino);
@@ -151,6 +153,9 @@ struct inode *chunkfs_iget(struct super_block *sb, unsigned long ino)
 
 	client_sb = ci->ci_sb;
 	client_inode = iget_locked(client_sb, client_ino);
+	if (!(client_inode->i_state & I_NEW))
+		return 0;
+
 	if (is_bad_inode(client_inode)) {
 		/* XXX should do something here */
 		BUG();
@@ -158,8 +163,8 @@ struct inode *chunkfs_iget(struct super_block *sb, unsigned long ino)
 	}
 	chunkfs_start_inode(inode, client_inode, chunk_id);
 
-	unlock_new_inode(inode);
-	unlock_new_inode(client_inode);
+	unlock_inode(inode);
+	unlock_inode(client_inode);
 
 	return 0;
 }

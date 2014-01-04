@@ -115,4 +115,10 @@ static inline struct vfsmount *get_client_mnt(struct dentry *dentry)
 	return dp->dp_client_nd->path.mnt;
 }
 
+static inline void unlock_inode(struct inode *inode)
+{
+	if (inode->i_state & I_NEW)
+		unlock_new_inode(inode);
+}
+
 #endif /* __KERNEL__ */
