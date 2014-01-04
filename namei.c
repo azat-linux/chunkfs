@@ -179,7 +179,7 @@ static int
 chunkfs_create(struct inode *dir, struct dentry *dentry, umode_t mode,
 	       bool excl)
 {
-	struct inode *client_dir = get_client_inode(dir);
+	struct inode *client_dir = !CHUNKFS_ROOT_INODE(dir) ? get_client_inode(dir) : dir;
 	struct dentry *client_dentry = get_client_dentry(dentry);
 	struct nameidata *client_nd = get_client_nd(dentry);
 	u64 chunk_id = UINO_TO_CHUNK_ID(dir->i_ino);
