@@ -331,7 +331,7 @@ chunkfs_get_next_inode(struct inode *head_inode,
 	next_inode = iget_locked(ci->ci_sb, next_ino);
 	BUG_ON(!next_inode);
  found_inode:
-	unlock_new_inode(next_inode);
+	unlock_inode(next_inode);
 
 	if (is_bad_inode(next_inode))
 		return -EIO;
