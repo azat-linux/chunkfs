@@ -75,7 +75,7 @@ chunkfs_open_cont_file(struct file *file, loff_t *ppos,
 	struct chunkfs_cont_data *cd;
 	struct file *new_file;
 	/* TODO: embed struct path into chunkfs_continuation */
-	struct path co_path = { .mnt = cont->co_mnt, .dentry = cont->co_dentry };
+	struct path co_path;
 	int err;
 
 	printk(KERN_ERR "%s() pos %llu\n", __FUNCTION__, *ppos);
@@ -83,6 +83,9 @@ chunkfs_open_cont_file(struct file *file, loff_t *ppos,
 	err = chunkfs_get_cont_at_offset(file->f_dentry, *ppos, &cont);
 	if (err)
 		return err;
+
+	co_path.mnt = cont->co_mnt;
+	co_path.dentry = cont->co_dentry;
 
 	new_file = dentry_open(&co_path, file->f_flags, file->f_cred);
 	if (IS_ERR(new_file)) {
