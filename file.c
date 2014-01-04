@@ -212,10 +212,6 @@ chunkfs_open(struct inode *inode, struct file *filp)
 
 	printk(KERN_ERR "%s()\n", __FUNCTION__);
 
-	/* For root inode we don't need chunk-handling */
-	if (CHUNKFS_ROOT_INODE(inode))
-		return generic_file_open(inode, filp);
-
 	err = chunkfs_open_cont_file(filp, &dummy_pos, &client_file, &cont);
 	if (err)
 		goto out;
@@ -296,10 +292,6 @@ int chunkfs_permission(struct inode *inode, int submask)
 {
 	struct inode *client_inode = get_client_inode(inode);
 	int err;
-
-	/* For root inode we don't need to lookup client inode */
-	if (CHUNKFS_ROOT_INODE(inode))
-		return generic_permission(inode, submask);
 
 	if (client_inode->i_op->permission)
 		err = client_inode->i_op->permission(client_inode, submask);

@@ -433,6 +433,7 @@ static int chunkfs_read_root(struct super_block *sb)
 	dentry = dget(nd.path.dentry);
 	chunkfs_init_nd(inode, sb->s_root, dentry, ci->ci_chunk_id);
 	chunkfs_add_dentry(sb->s_root, dentry, nd.path.mnt);
+	chunkfs_start_inode(inode, nd.path.dentry->d_inode, ci->ci_chunk_id);
 	path_put(&nd.path);
 	return 0;
  out_dentry:
