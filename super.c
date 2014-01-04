@@ -417,6 +417,14 @@ static int chunkfs_read_root(struct super_block *sb)
 	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
 	inode_init_owner(inode, NULL, S_IFDIR);
 
+	retval = kern_path("/chunk1/root/", LOOKUP_FOLLOW, &nd.path);
+	if (retval)
+		goto out_dentry;
+	dentry = dget(nd.path.dentry);
+
+	/* Finish inode init */
+	chunkfs_start_inode(inode, dentry->d_inode, ci->ci_chunk_id);
+
 	sb->s_root = d_make_root(inode);
 	if (!sb->s_root) {
 		retval = -ENOMEM;
@@ -425,13 +433,8 @@ static int chunkfs_read_root(struct super_block *sb)
 	retval = chunkfs_init_dentry(sb->s_root);
 	if (retval)
 		goto out_dput;
-	retval = kern_path("/chunk1/root/", LOOKUP_FOLLOW, &nd.path);
-	if (retval)
-		goto out_dentry;
-	dentry = dget(nd.path.dentry);
 	chunkfs_init_nd(inode, sb->s_root, dentry, ci->ci_chunk_id);
 	chunkfs_add_dentry(sb->s_root, dentry, nd.path.mnt);
-	chunkfs_start_inode(inode, nd.path.dentry->d_inode, ci->ci_chunk_id);
 	path_put(&nd.path);
 	return 0;
  out_dentry:
