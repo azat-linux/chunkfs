@@ -432,8 +432,6 @@ static int chunkfs_read_root(struct super_block *sb)
 	chunkfs_init_nd(inode, sb->s_root, dentry, ci->ci_chunk_id);
 	chunkfs_add_dentry(sb->s_root, dentry, nd.path.mnt);
 	chunkfs_start_inode(inode, nd.path.dentry->d_inode, ci->ci_chunk_id);
-	/* Reseted by chunkfs_start_inode(), need to restore */
-	inode->i_ino = ino;
 	path_put(&nd.path);
 	return 0;
  out_dentry:
