@@ -423,6 +423,7 @@ static int chunkfs_read_root(struct super_block *sb)
 	dentry = dget(nd.path.dentry);
 
 	/* Finish inode init */
+	chunkfs_init_cont_data(dentry);
 	chunkfs_start_inode(inode, dentry->d_inode, ci->ci_chunk_id);
 	/* Restore it, after chunkfs_start_inode() */
 	inode->i_ino = ino;
