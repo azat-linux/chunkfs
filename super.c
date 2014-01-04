@@ -424,6 +424,8 @@ static int chunkfs_read_root(struct super_block *sb)
 
 	/* Finish inode init */
 	chunkfs_start_inode(inode, dentry->d_inode, ci->ci_chunk_id);
+	/* Restore it, after chunkfs_start_inode() */
+	inode->i_ino = ino;
 
 	sb->s_root = d_make_root(inode);
 	if (!sb->s_root) {
