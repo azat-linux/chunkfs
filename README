@@ -1,0 +1,70 @@
+Chunkfs README
+
+Val Henson <val@nmt.edu>
+
+Summary
+-------
+
+Chunkfs is an experimental local file system designed to quickly
+recover from file system corruption.  Each file system is divided up
+into many small chunks, each of which can be checked and repaired with
+very few references to other chunks.  In most cases, only a small part
+of the file system must be checked and repaired before it can be
+brought back online, requiring minutes instead of hours of downtime to
+recover from a file system error.
+
+Status
+------
+
+Chunkfs development began in February 2007.  Growing a file into two
+chunks is supported but not much else.
+
+See the project web site for the current status:
+
+http://chunkfs.org
+
+License
+-------
+
+Chunkfs is licensed under the GNU General Public License version 2.
+Chunks is released as a patch against the Linux kernel, which contains
+a copy of the GPLv2.
+
+Funding
+-------
+
+Development of chunkfs was funded by:
+
+Intel
+EMC Centera
+VAH Consulting
+
+How it works
+------------
+
+Each file system is divided up into many small chunks.  Each chunk is
+marked as dirty or clean.  Things that make a chunk dirty are
+in-progress writes to metadata (creat(), chmod(), extending a file,
+etc.), I/O errors reported by the disk, and any data integrity errors
+observed by the file system code (bad checksums, wrong magic number,
+etc.).  At mount time, each dirty chunk is checked with fsck and
+repaired if necessary, with limited references to other chunks.  Clean
+chunks are not checked unless specifically requested.
+
+The metadata inside a chunk is structured so that nearly all
+references are within the chunk only.  No block pointers or hard links
+may cross chunk boundaries.  Only one kind of reference crosses the
+chunk boundary: inode continuations.  When an inode needs to grow out
+of a chunk (either its data has outgrown the free space or we want to
+link to an inode outside its chunk), we allocate a new inode in the
+appropriate chunk and link the two inodes together with forward and
+back pointers, creating a continuation.  Logically, the two inodes are
+parts of a single file or directory.  When checking a chunk containing
+a continuation inode, the forward and back pointers allow us to
+quickly find the relevant information in any other chunks, without
+reading all the metadata in the entire chunk.  Each chunk also keeps a
+bitmap of all inodes with continuations, as in some circumstances all
+continuations must be checked.
+
+For more information, see the documentation section on the project web
+site.
