@@ -1,0 +1,8 @@
+config CHUNK_FS
+	tristate "Chunkfs support (EXPERIMENTAL)"
+	default y
+	help
+		Chunkfs is an experimental file systed designed to be
+		swiftly and easily repairable.
+
+		If unsure, say N.
