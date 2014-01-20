@@ -8,6 +8,9 @@
 #ifndef _LINUX_CHUNKFS_FS_H
 #define _LINUX_CHUNKFS_FS_H
 
+/* TODO move into include/uapi/linux/magic.h */
+#define CHUNKFS_SUPER_MAGIC 0x5afe5afe
+
 /* XXX Do above _H stuff for other header files */
 
 #include <linux/types.h>
