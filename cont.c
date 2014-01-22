@@ -362,7 +362,6 @@ chunkfs_create_continuation(struct file *file, loff_t *ppos,
 	char path[PATH_MAX];
 	struct dentry *dentry;
 	struct chunkfs_cont_data cd;
-	struct filename filename = { .name = path };
 	int err;
 
 	printk(KERN_ERR "%s()\n", __FUNCTION__);
@@ -390,7 +389,7 @@ chunkfs_create_continuation(struct file *file, loff_t *ppos,
 		from_ino);
 
 	/* Create the file */
-	new_file = file_open_name(&filename, O_CREAT | O_RDWR, MAY_WRITE | MAY_READ | MAY_APPEND);
+	new_file = filp_open(path, O_CREAT | O_RDWR, MAY_WRITE | MAY_READ | MAY_APPEND);
 	if (IS_ERR(new_file)) {
 		err = PTR_ERR(new_file);
 		printk(KERN_ERR "open_namei for %s: err %d\n", path, err);
