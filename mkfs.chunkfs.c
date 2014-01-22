@@ -11,7 +11,6 @@
 #include <unistd.h>
 #include <string.h>
 
-// TODO: add #ifdef
 #include <linux/byteorder/little_endian.h>
 
 #include "chunkfs.h"
