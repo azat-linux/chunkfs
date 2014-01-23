@@ -194,11 +194,11 @@ chunkfs_get_next_cont(struct dentry *head_dentry,
 		      struct chunkfs_continuation *prev_cont,
 		      struct chunkfs_continuation **next_cont)
 {
+	char *path = NULL;
 	struct inode *head_inode = head_dentry->d_inode;
 	struct chunkfs_cont_data *cd;
 	struct dentry *client_dentry;
 	struct nameidata nd;
-	char path[PATH_MAX];
 	u64 from_chunk_id;
 	u64 chunk_id;
 	u64 from_ino;
@@ -231,6 +231,12 @@ chunkfs_get_next_cont(struct dentry *head_dentry,
 		chunk_id = UINO_TO_CHUNK_ID(next_uino);
 		from_chunk_id = prev_cont->co_chunk_id;
 		from_ino = UINO_TO_INO(prev_cont->co_uino);
+
+		path = __getname();
+		err = PTR_ERR_OR_ZERO(path);
+		if (err)
+			return err;
+
 		sprintf(path, "/chunk%llu/%llu/%llu",
 			chunk_id, from_chunk_id, from_ino);
 		err = kern_path(path, 0, &nd.path);
@@ -245,8 +251,9 @@ chunkfs_get_next_cont(struct dentry *head_dentry,
 	err = load_continuation(head_inode, client_dentry, chunk_id,
 				next_cont);
 
-	printk(KERN_ERR "%s() returning err %d\n", __FUNCTION__, err);
+	__putname(path);
 
+	printk(KERN_ERR "%s() returning err %d\n", __FUNCTION__, err);
 	return err;
 }
 
