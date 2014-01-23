@@ -352,6 +352,7 @@ chunkfs_create_continuation(struct file *file, loff_t *ppos,
 			    struct file **client_file,
 			    struct chunkfs_continuation **ret_cont)
 {
+	char *path = NULL;
 	struct chunkfs_continuation *prev_cont = NULL;
 	struct chunkfs_continuation *next_cont;
 	struct chunkfs_continuation *new_cont;
@@ -359,7 +360,6 @@ chunkfs_create_continuation(struct file *file, loff_t *ppos,
 	u64 from_chunk_id;
 	u64 to_chunk_id;
 	u64 from_ino;
-	char path[PATH_MAX];
 	struct dentry *dentry;
 	struct chunkfs_cont_data cd;
 	int err;
@@ -385,6 +385,10 @@ chunkfs_create_continuation(struct file *file, loff_t *ppos,
 	printk(KERN_ERR "%s() to chunk %llu\n", __FUNCTION__, to_chunk_id);
 
 	/* Now we need the filename for the continuation inode. */
+	path = __getname();
+	err = PTR_ERR_OR_ZERO(path);
+	if (err)
+		goto out;
 	sprintf(path, "/chunk%llu/%llu/%llu", to_chunk_id, from_chunk_id,
 		from_ino);
 
@@ -394,7 +398,7 @@ chunkfs_create_continuation(struct file *file, loff_t *ppos,
 		err = PTR_ERR(new_file);
 		printk(KERN_ERR "open_namei for %s: err %d\n", path, err);
 		printk(KERN_ERR "dentry_open: err %d\n", err);
-		goto out;
+		goto out_free;
 	}
 	*client_file = new_file;
 
@@ -418,11 +422,12 @@ chunkfs_create_continuation(struct file *file, loff_t *ppos,
 
 	*ret_cont = new_cont;
 
-	printk(KERN_ERR "%s(): start %llu returning %d\n",
-	       __FUNCTION__, cd.cd_start, err);
-	return 0;
+ out_free:
+	__putname(path);
  out:
-	chunkfs_put_continuation(prev_cont);
+	if (err)
+		chunkfs_put_continuation(prev_cont);
+
 	printk(KERN_ERR "%s(): start %llu returning %d\n",
 	       __FUNCTION__, cd.cd_start, err);
 	return err;
