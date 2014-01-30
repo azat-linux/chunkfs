@@ -42,7 +42,7 @@ static struct inode *chunkfs_alloc_inode(struct super_block *sb)
 	if (!ii)
 		return NULL;
 	/* XXX should be done in cache constructor */
-	spin_lock_init(&ii->ii_continuations_lock);
+	mutex_init(&ii->ii_continuations_lock);
 	/* Don't load head  continuation until file open */
 	inode = &ii->ii_vnode;
 	inode_init_once(inode);

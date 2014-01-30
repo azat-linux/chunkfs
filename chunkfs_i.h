@@ -49,7 +49,7 @@ struct chunkfs_inode_info {
 	/* Head client inode - keeps our inode state */
 	struct inode *ii_client_inode;
 	/* Protects on-disk continuation list */
-	spinlock_t ii_continuations_lock;
+	struct mutex ii_continuations_lock;
 };
 
 /*

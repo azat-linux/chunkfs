@@ -243,7 +243,7 @@ chunkfs_fsync_file(struct file *file, loff_t start, loff_t end, int datasync)
 	printk(KERN_ERR "%s()\n", __FUNCTION__);
 
 	/* XXX syncs all inodes instead of just ones in mem */
-	spin_lock(&ii->ii_continuations_lock);
+	mutex_lock(&ii->ii_continuations_lock);
 	while (1) {
 		err = chunkfs_get_next_cont(file->f_dentry, prev_cont, &next_cont);
 		if (err || (next_cont == NULL))
@@ -257,7 +257,7 @@ chunkfs_fsync_file(struct file *file, loff_t start, loff_t end, int datasync)
 		err = client_inode->i_fop->fsync(&client_file, start, end, datasync);
 		prev_cont = next_cont;
 	}
-	spin_unlock(&ii->ii_continuations_lock);
+	mutex_unlock(&ii->ii_continuations_lock);
 	printk(KERN_ERR "%s() err %d\n", __FUNCTION__, err);
 	return err;
 }

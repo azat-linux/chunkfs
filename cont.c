@@ -270,7 +270,7 @@ chunkfs_get_cont_at_offset(struct dentry *dentry, loff_t offset,
 	printk(KERN_ERR "%s() reading ino %0lx offset %llu\n",
 		__FUNCTION__, dentry->d_inode->i_ino, offset);
 
-	spin_lock(&ii->ii_continuations_lock);
+	mutex_lock(&ii->ii_continuations_lock);
 	while (1) {
 		err = chunkfs_get_next_cont(dentry, prev_cont, &next_cont);
 		if (err || (next_cont == NULL))
@@ -287,7 +287,7 @@ chunkfs_get_cont_at_offset(struct dentry *dentry, loff_t offset,
 		printk(KERN_ERR "not this one\n");
 		prev_cont = next_cont;
 	}
-	spin_unlock(&ii->ii_continuations_lock);
+	mutex_unlock(&ii->ii_continuations_lock);
 	/* If we didn't find a cont at all, return -ENOENT */
 	if (next_cont == NULL)
 		err = -ENOENT;
