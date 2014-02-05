@@ -500,14 +500,6 @@ static int chunkfs_fill_super (struct super_block *sb, void *data, int silent)
 
 	chunkfs_setup_super (sb, pi, sb->s_flags & MS_RDONLY);
 
-	chunkfs_inode_cachep = kmem_cache_create("chunkfs_inode_cachep",
-		sizeof(struct chunkfs_inode_info),
-		0, (SLAB_RECLAIM_ACCOUNT| SLAB_MEM_SPREAD), NULL);
-	if (!chunkfs_inode_cachep) {
-		retval = -ENOMEM;
-		goto out;
-	}
-
 	printk(KERN_ERR "chunkfs: mounted file system\n");
 	mutex_lock(&chunkfs_kernel_mutex);
 	return 0;
@@ -551,6 +543,13 @@ static int __init init_chunkfs_fs(void)
 	if (!err)
 		printk(KERN_INFO "chunkfs (C) 2007 Valerie Henson "
 		       "<val@nmt.edu>\n");
+
+	chunkfs_inode_cachep = kmem_cache_create("chunkfs_inode_cachep",
+		sizeof(struct chunkfs_inode_info),
+		0, (SLAB_RECLAIM_ACCOUNT| SLAB_MEM_SPREAD), NULL);
+	if (!chunkfs_inode_cachep)
+		err = -ENOMEM;
+
 	return err;
 }
 
