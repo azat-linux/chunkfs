@@ -30,15 +30,15 @@
 #include "chunkfs_chunk.h"
 #include "chunkfs_i.h"
 
+static struct kmem_cache *chunkfs_inode_cachep;
 static DEFINE_MUTEX(chunkfs_kernel_mutex);
 
 static struct inode *chunkfs_alloc_inode(struct super_block *sb)
 {
-	/* XXX Make a kmem_cache */
 	struct chunkfs_inode_info *ii;
 	struct inode *inode;
 
-	ii = kzalloc(sizeof (*ii), GFP_KERNEL);
+	ii = kmem_cache_alloc(chunkfs_inode_cachep, GFP_KERNEL);
 	if (!ii)
 		return NULL;
 	/* XXX should be done in cache constructor */
@@ -58,7 +58,7 @@ static void chunkfs_destroy_inode(struct inode *inode)
 	printk(KERN_ERR "%s(): ino %0lx i_count %d\n", __FUNCTION__,
 	       inode->i_ino, atomic_read(&inode->i_count));
 
-	kfree(ii);
+	kmem_cache_free(chunkfs_inode_cachep, ii);
 }
 
 static void chunkfs_clear_inode(struct inode *inode)
@@ -500,6 +500,14 @@ static int chunkfs_fill_super (struct super_block *sb, void *data, int silent)
 
 	chunkfs_setup_super (sb, pi, sb->s_flags & MS_RDONLY);
 
+	chunkfs_inode_cachep = kmem_cache_create("chunkfs_inode_cachep",
+		sizeof(struct chunkfs_inode_info),
+		0, (SLAB_RECLAIM_ACCOUNT| SLAB_MEM_SPREAD), NULL);
+	if (!chunkfs_inode_cachep) {
+		retval = -ENOMEM;
+		goto out;
+	}
+
 	printk(KERN_ERR "chunkfs: mounted file system\n");
 	mutex_lock(&chunkfs_kernel_mutex);
 	return 0;
@@ -549,6 +557,7 @@ static int __init init_chunkfs_fs(void)
 static void __exit exit_chunkfs_fs(void)
 {
 	unregister_filesystem(&chunkfs_fs_type);
+	kmem_cache_destroy(chunkfs_inode_cachep);
 }
 
 MODULE_AUTHOR("Val Henson");
