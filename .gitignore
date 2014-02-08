@@ -3,6 +3,7 @@ mkfs.chunkfs
 write_pattern
 # test fs images
 *.img
+/invest*
 
 #
 # NOTE! Don't add files that are generated in specific
