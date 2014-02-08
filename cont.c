@@ -240,8 +240,10 @@ chunkfs_get_next_cont(struct dentry *head_dentry,
 		sprintf(path, "/chunk%llu/%llu/%llu",
 			chunk_id, from_chunk_id, from_ino);
 		err = kern_path(path, 0, &nd.path);
+		__putname(path);
 		if (err)
 			return -ENOENT;
+
 		client_dentry = dget(nd.path.dentry);
 		path_put(&nd.path);
 	}
@@ -250,8 +252,6 @@ chunkfs_get_next_cont(struct dentry *head_dentry,
 
 	err = load_continuation(head_inode, client_dentry, chunk_id,
 				next_cont);
-
-	__putname(path);
 
 	printk(KERN_ERR "%s() returning err %d\n", __FUNCTION__, err);
 	return err;
