@@ -1,6 +1,7 @@
 obj-m += chunkfs.o
 chunkfs-y := super.o inode.o dir.o file.o namei.o symlink.o cont.o
 hostprogs-y := mkfs.chunkfs write_pattern
+ccflags-y := -DCHUNKFS_DEBUG
 
 all: $(hostprogs-y) ko
 
