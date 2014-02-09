@@ -22,7 +22,7 @@ chunkfs_dir_llseek(struct file *file, loff_t offset, int origin)
 	int err;
 
 	/* XXX... should only do top-level file struct? */
-	printk(KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 
 	err = chunkfs_open_cont_file(file, &offset, &client_file, &cont);
 	if (err)
@@ -44,7 +44,7 @@ chunkfs_iterate(struct file *file, struct dir_context *ctx)
 	struct chunkfs_continuation *cont;
 	int err;
 
-	printk(KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 
 	err = chunkfs_open_cont_file(file, &file->f_pos, &client_file, &cont);
 	if (err)

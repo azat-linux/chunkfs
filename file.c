@@ -42,10 +42,8 @@ chunkfs_copy_down_file(struct file *file, loff_t *ppos,
 	client_file->f_pos = *ppos - client_start;
 	*ppos = client_file->f_pos;
 
-	printk(KERN_ERR "%s(): client f_pos set to %llu "
-	       "(parent %llu, client_start %llu)\n",
-	       __FUNCTION__, client_file->f_pos, file->f_pos,
-	       client_start);
+	chunkfs_debug("client f_pos set to %llu (parent %llu, client_start %llu)\n",
+		client_file->f_pos, file->f_pos, client_start);
 }
 
 /*
@@ -57,9 +55,8 @@ copy_up_file(struct file *file, struct file *client_file, u64 client_start)
 {
 	file->f_pos = client_file->f_pos + client_start;
 
-	printk(KERN_ERR "%s(): file f_pos set to %llu (client f_pos %llu "
-	       "client_start %llu)\n", __FUNCTION__, file->f_pos,
-	       client_file->f_pos, client_start);
+	chunkfs_debug("file f_pos set to %llu (client f_pos %llu client_start %llu)\n",
+		file->f_pos, client_file->f_pos, client_start);
 }
 
 /*
@@ -78,7 +75,7 @@ chunkfs_open_cont_file(struct file *file, loff_t *ppos,
 	struct path co_path;
 	int err;
 
-	printk(KERN_ERR "%s() pos %llu\n", __FUNCTION__, *ppos);
+	chunkfs_debug("pos %llu\n", *ppos);
 
 	err = chunkfs_get_cont_at_offset(file->f_dentry, *ppos, &cont);
 	if (err)
@@ -90,7 +87,7 @@ chunkfs_open_cont_file(struct file *file, loff_t *ppos,
 	new_file = dentry_open(&co_path, file->f_flags, file->f_cred);
 	if (IS_ERR(new_file)) {
 		err = PTR_ERR(new_file);
-		printk(KERN_ERR "dentry_open: err %d\n", err);
+		chunkfs_debug("dentry_open: err %d\n", err);
 		goto out;
 	}
 	cd = &cont->co_cd;
@@ -99,7 +96,7 @@ chunkfs_open_cont_file(struct file *file, loff_t *ppos,
 	*ret_cont = cont;
 	*client_file = new_file;
  out:
-	printk(KERN_ERR "%s(): returning %d\n", __FUNCTION__, err);
+	chunkfs_debug("returning %d\n", err);
 	return err;
 }
 
@@ -109,7 +106,7 @@ chunkfs_close_cont_file(struct file *file, struct file *client_file,
 {
 	struct chunkfs_cont_data *cd = &cont->co_cd;
 	/* XXX... sys_close does a lot more than this. */
-	printk(KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 	copy_up_file(file, client_file, cd->cd_start);
 	chunkfs_copy_up_inode(file->f_dentry->d_inode,
 			      client_file->f_dentry->d_inode);
@@ -123,7 +120,7 @@ chunkfs_close_cont_file(struct file *file, struct file *client_file,
 static loff_t
 chunkfs_llseek_file(struct file *file, loff_t offset, int origin)
 {
-	printk(KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 
 	/* XXX right generic llseek? */
 	return default_llseek(file, offset, origin);
@@ -141,7 +138,7 @@ chunkfs_read(struct file *file, char __user *buf, size_t len, loff_t *ppos)
 	struct chunkfs_continuation *cont;
 	int err;
 
-	printk(KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 
 	err = chunkfs_open_cont_file(file, ppos, &client_file, &cont);
 	/* Read off the end of the file */
@@ -174,8 +171,7 @@ chunkfs_write(struct file *file, const char __user *buf, size_t len,
 	ssize_t size;
 	int err;
 
-	printk(KERN_ERR "%s() pos %llu len %zu\n",
-	       __FUNCTION__, *ppos, len);
+	chunkfs_debug("pos %llu len %zu\n", *ppos, len);
 
 	err = chunkfs_open_cont_file(file, ppos, &client_file, &cont);
 	if (err == -ENOENT) {
@@ -193,8 +189,7 @@ chunkfs_write(struct file *file, const char __user *buf, size_t len,
 
 	chunkfs_close_cont_file(file, client_file, cont);
 
-	printk(KERN_ERR "%s() pos %llu len %zu, returning size %zu\n",
-	       __FUNCTION__, *ppos, len, size);
+	chunkfs_debug("pos %llu len %zu, returning size %zu\n", *ppos, len, size);
 
 	return size;
 }
@@ -213,7 +208,7 @@ chunkfs_open(struct inode *inode, struct file *filp)
 	loff_t dummy_pos = 0;
 	int err;
 
-	printk(KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 
 	err = chunkfs_open_cont_file(filp, &dummy_pos, &client_file, &cont);
 	if (err)
@@ -221,7 +216,7 @@ chunkfs_open(struct inode *inode, struct file *filp)
 	chunkfs_close_cont_file(filp, client_file, cont);
 	return 0;
  out:
-	printk(KERN_ERR "%s() returning %d\n", __FUNCTION__, err);
+	chunkfs_debug("returning %d\n", err);
 	return err;
 }
 
@@ -240,7 +235,7 @@ chunkfs_fsync_file(struct file *file, loff_t start, loff_t end, int datasync)
 	struct file client_file;
 	int err = -EIO;
 
-	printk(KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 
 	/* XXX syncs all inodes instead of just ones in mem */
 	mutex_lock(&ii->ii_continuations_lock);
@@ -258,7 +253,7 @@ chunkfs_fsync_file(struct file *file, loff_t start, loff_t end, int datasync)
 		prev_cont = next_cont;
 	}
 	mutex_unlock(&ii->ii_continuations_lock);
-	printk(KERN_ERR "%s() err %d\n", __FUNCTION__, err);
+	chunkfs_debug("err %d\n", err);
 	return err;
 }
 
@@ -268,7 +263,7 @@ int chunkfs_setattr(struct dentry *dentry, struct iattr *attr)
 	struct dentry *client_dentry = get_client_dentry(dentry);
 	int error;
 
-	printk(KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 
 	if (client_inode->i_op->setattr) {
 		error = client_inode->i_op->setattr(client_dentry, attr);

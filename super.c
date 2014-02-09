@@ -55,8 +55,8 @@ static void chunkfs_destroy_inode(struct inode *inode)
 {
 	struct chunkfs_inode_info *ii = CHUNKFS_I(inode);
 
-	printk(KERN_ERR "%s(): ino %0lx i_count %d\n", __FUNCTION__,
-	       inode->i_ino, atomic_read(&inode->i_count));
+	chunkfs_debug("ino %0lx i_count %d\n",
+		inode->i_ino, atomic_read(&inode->i_count));
 
 	kmem_cache_free(chunkfs_inode_cachep, ii);
 }
@@ -65,8 +65,8 @@ static void chunkfs_clear_inode(struct inode *inode)
 {
 	struct chunkfs_inode_info *ii = CHUNKFS_I(inode);
 
-	printk(KERN_ERR "%s(): ino %0lx i_count %d\n",
-	       __FUNCTION__, inode->i_ino, atomic_read(&inode->i_count));
+	chunkfs_debug("ino %0lx i_count %d\n",
+		inode->i_ino, atomic_read(&inode->i_count));
 	iput(ii->ii_client_inode);
 }
 
@@ -89,8 +89,7 @@ chunkfs_read_client_sb(struct chunkfs_chunk_info *ci)
 	sprintf(mount_path, "%s%llu", path_prefix, ci->ci_chunk_id);
 	retval = kern_path(mount_path, LOOKUP_FOLLOW, &nd.path);
 	if (retval) {
-		printk(KERN_ERR "path_lookup for %s failed: %d\n",
-		       mount_path, retval);
+		chunkfs_debug("path_lookup for %s failed: %d\n", mount_path, retval);
 		return retval;
 	}
 	/* XXX locking XXX prevent unmount XXX ref count XXX XXX */
@@ -166,7 +165,7 @@ static int chunkfs_read_chunk(struct super_block *sb,
 	/* XXX assumes offset is multiple of underlying block size */
 
 	if (!(bh = sb_bread(sb, chunk_offset/CHUNKFS_BLK_SIZE))) {
-		printk (KERN_ERR "chunkfs: unable to read chunk summary at %llu",
+		printk(KERN_ERR "chunkfs: unable to read chunk summary at %llu",
 			chunk_offset);
 		goto out_nobh;
 	}
@@ -175,7 +174,7 @@ static int chunkfs_read_chunk(struct super_block *sb,
 	chunk = CHUNKFS_CHUNK(ci);
 
 	if ((err = check_chunk(chunk)) != 0) {
-		printk (KERN_ERR "chunkfs: Invalid chunk summary, err %d, chksum %0x\n",
+		printk(KERN_ERR "chunkfs: invalid chunk summary, err %d, chksum %0x\n",
 			err, le32_to_cpu(chunk->c_chksum));
 		goto out;
 	}
@@ -224,7 +223,7 @@ static int chunkfs_read_dev(struct super_block *sb,
 	/* XXX assumes sb offset is multiple of underlying block size */
 
 	if (!(bh = sb_bread(sb, CHUNKFS_DEV_BLK))) {
-		printk (KERN_ERR "chunkfs: unable to read dev summary\n");
+		printk(KERN_ERR "chunkfs: unable to read dev summary\n");
 		goto out_nobh;
 	}
 
@@ -232,7 +231,7 @@ static int chunkfs_read_dev(struct super_block *sb,
 	dev = CHUNKFS_DEV(di);
 
 	if ((err = check_dev(dev)) != 0) {
-		printk (KERN_ERR "chunkfs: Invalid dev summary err %d chksum %0x\n",
+		printk(KERN_ERR "chunkfs: nnvalid dev summary err %d chksum %0x\n",
 			err, le32_to_cpu(dev->d_chksum));
 		goto out_bh;
 	}
@@ -298,7 +297,7 @@ static int chunkfs_read_pool(struct super_block *sb,
 	/* XXX assumes sb offset is multiple of underlying block size */
 
 	if (!(bh = sb_bread(sb, CHUNKFS_POOL_BLK))) {
-		printk (KERN_ERR "chunkfs: unable to read pool summary\n");
+		printk(KERN_ERR "chunkfs: unable to read pool summary\n");
 		goto out_nobh;
 	}
 
@@ -306,7 +305,7 @@ static int chunkfs_read_pool(struct super_block *sb,
 	pool = CHUNKFS_POOL(pi);
 
 	if ((err = check_pool(pool)) != 0) {
-		printk (KERN_ERR "chunkfs: Invalid pool summary, err %d chksum %0x magic %0x\n",
+		printk(KERN_ERR "chunkfs: invalid pool summary, err %d chksum %0x magic %0x\n",
 			err, le32_to_cpu(pool->p_chksum), le32_to_cpu(pool->p_magic));
 		goto out;
 	}
@@ -446,7 +445,7 @@ static int chunkfs_read_root(struct super_block *sb)
 	dput(sb->s_root);
  out_iput:
 	iput(inode);
-	printk(KERN_ERR "%s() allocation of root inode failed\n", __FUNCTION__);
+	printk(KERN_ERR "chunkfs: allocation of root inode failed\n");
 	return retval;
 }
 
@@ -470,14 +469,14 @@ static int chunkfs_setup_super(struct super_block *sb,
  * XXX todo, put dev summary copies in chunk summaries.
  */
 
-static int chunkfs_fill_super (struct super_block *sb, void *data, int silent)
+static int chunkfs_fill_super(struct super_block *sb, void *data, int silent)
 {
 	struct chunkfs_pool_info *pi;
 	int retval = -EINVAL;
 
 	mutex_unlock(&chunkfs_kernel_mutex);
 
-	printk(KERN_ERR "%s\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 
 	/* We must set blocksize before we can read blocks. */
 
@@ -503,7 +502,7 @@ static int chunkfs_fill_super (struct super_block *sb, void *data, int silent)
  out:
 	mutex_lock(&chunkfs_kernel_mutex);
 	BUG_ON(retval == 0);
-	printk(KERN_ERR "%s() failed! err %d\n", __FUNCTION__, retval);
+	printk(KERN_ERR "chunkfs: mount failed (%d)\n", retval);
 	return retval;
 }
 
@@ -538,8 +537,7 @@ static int __init init_chunkfs_fs(void)
 {
 	int err = register_filesystem(&chunkfs_fs_type);
 	if (!err)
-		printk(KERN_INFO "chunkfs (C) 2007 Valerie Henson "
-		       "<val@nmt.edu>\n");
+		printk(KERN_INFO "chunkfs (C) 2007 Valerie Henson <val@nmt.edu>\n");
 
 	chunkfs_inode_cachep = kmem_cache_create("chunkfs_inode_cachep",
 		sizeof(struct chunkfs_inode_info),

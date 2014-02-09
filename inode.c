@@ -35,13 +35,12 @@ chunkfs_copy_up_inode(struct inode *inode, struct inode *client_inode)
 		if (next_inode == NULL)
 			break;
 		/* XXX doesn't do holey files right */
-		printk(KERN_ERR "adding %llu\n", next_inode->i_size);
+		chunkfs_debug("adding %llu\n", next_inode->i_size);
 		total_size += next_inode->i_size;
 		prev_inode = next_inode;
 	}
 	inode->i_size = total_size;
-	printk(KERN_ERR "%s() ino %lu size %llu\n", __FUNCTION__,
-	       inode->i_ino, inode->i_size);
+	chunkfs_debug("ino %lu size %llu\n", inode->i_ino, inode->i_size);
 
 	mark_inode_dirty(inode);
 }
@@ -114,9 +113,8 @@ chunkfs_start_inode(struct inode *inode, struct inode *client_inode,
 	set_inode_ops(inode, client_inode);
 	chunkfs_copy_up_inode(inode, client_inode);
 
-	printk(KERN_ERR "%s(): inode %p ino %0lx mode %0x client %p\n",
-	       __FUNCTION__, inode, inode->i_ino, inode->i_mode,
-	       ii->ii_client_inode);
+	chunkfs_debug(" inode %p ino %0lx mode %0x client %p\n",
+		inode, inode->i_ino, inode->i_mode, ii->ii_client_inode);
 }
 
 /*
@@ -142,10 +140,8 @@ struct inode *chunkfs_iget(struct super_block *sb, unsigned long ino)
 	chunk_id = UINO_TO_CHUNK_ID(inode->i_ino);
 	client_ino = UINO_TO_INO(inode->i_ino);
 
-	printk (KERN_ERR "%s() reading ino %0lx client ino %0lx chunk_id "
-		"%0llx count %d\n",
-		__FUNCTION__, inode->i_ino, client_ino, chunk_id,
-		atomic_read(&inode->i_count));
+	chunkfs_debug("reading ino %0lx client ino %0lx chunk_id %0llx count %d\n",
+		inode->i_ino, client_ino, chunk_id, atomic_read(&inode->i_count));
 
 	/* XXX should be chunkfs_get_sb */
 	ci = chunkfs_find_chunk(sb->s_fs_info, chunk_id);

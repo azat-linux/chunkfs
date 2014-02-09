@@ -42,9 +42,9 @@ chunkfs_init_nd(struct inode *dir, struct dentry *dentry,
 	/* Probably don't need dget/mntget */
 	nd->path.dentry = dget(client_dentry);
 	nd->path.mnt = mntget(chunk->ci_mnt);
-	printk(KERN_ERR "%s(): dentry %p name %s client_dentry %p mnt %s\n",
-	       __FUNCTION__, dentry, dentry->d_iname, client_dentry,
-	       nd->path.mnt->mnt_sb->s_type->name);
+	chunkfs_debug("dentry %p name %s client_dentry %p mnt %s\n",
+		dentry, dentry->d_iname, client_dentry,
+		nd->path.mnt->mnt_sb->s_type->name);
 }
 
 /*
@@ -102,7 +102,7 @@ chunkfs_free_dentry(struct dentry *dentry)
 void
 chunkfs_release_dentry(struct dentry *dentry)
 {
-	printk(KERN_ERR "%s(): name %s\n", __FUNCTION__, dentry->d_name.name);
+	chunkfs_debug("name %s\n", dentry->d_name.name);
 	/*
 	 * Root dentry can be legitimately released on umount, but is
 	 * also a common manifestation of refcounting problems.  Catch
@@ -187,8 +187,8 @@ chunkfs_create(struct inode *dir, struct dentry *dentry, umode_t mode,
 	int err;
 	struct nameidata nd;
 
-	printk(KERN_ERR "%s(): dir ino %0lx i_count %d\n",
-	       __FUNCTION__, dir->i_ino, atomic_read(&dir->i_count));
+	chunkfs_debug("dir ino %0lx i_count %d\n",
+		dir->i_ino, atomic_read(&dir->i_count));
 
 	err = chunkfs_new_inode(dir->i_sb, &inode);
 	if (err)
@@ -217,13 +217,12 @@ chunkfs_create(struct inode *dir, struct dentry *dentry, umode_t mode,
 	/* Now put our new inode into the dentry */
 	d_instantiate(dentry, inode);
 
-	printk(KERN_ERR "dentry %p name %s inode %p ino %0lx\n",
-	       dentry, dentry->d_iname, dentry->d_inode,
-	       dentry->d_inode->i_ino);
+	chunkfs_debug("dentry %p name %s inode %p ino %0lx\n",
+		dentry, dentry->d_iname, dentry->d_inode, dentry->d_inode->i_ino);
 
-	printk(KERN_ERR "client dentry %p name %s inode %p ino %0lx\n",
-	       client_dentry, client_dentry->d_iname, client_dentry->d_inode,
-	       client_dentry->d_inode->i_ino);
+	chunkfs_debug("client dentry %p name %s inode %p ino %0lx\n",
+		client_dentry, client_dentry->d_iname, client_dentry->d_inode,
+		client_dentry->d_inode->i_ino);
 	return 0;
  out_inode:
 	iput(inode);
@@ -242,9 +241,8 @@ chunkfs_lookup(struct inode * dir, struct dentry *dentry, unsigned int flags)
 	struct inode *inode;
 	int err;
 
-	printk(KERN_ERR "%s(): name %s dir ino %0lx i_count %d\n",
-	       __FUNCTION__, dentry->d_iname, dir->i_ino,
-	       atomic_read(&dir->i_count));
+	chunkfs_debug("name %s dir ino %0lx i_count %d\n",
+		dentry->d_iname, dir->i_ino, atomic_read(&dir->i_count));
 
 	err = chunkfs_init_dentry(dentry);
 	if (err)
@@ -302,10 +300,10 @@ chunkfs_lookup(struct inode * dir, struct dentry *dentry, unsigned int flags)
 	/* Hook up the client and parent dentries. */
 	chunkfs_add_dentry(dentry, client_dentry, client_nd->path.mnt);
 
-	printk(KERN_ERR "dentry %p name %s inode %p\n",
-	       dentry, dentry->d_iname, dentry->d_inode);
-	printk(KERN_ERR "client dentry %p name %s inode %p\n", client_dentry,
-	       client_dentry->d_iname, client_dentry->d_inode);
+	chunkfs_debug("dentry %p name %s inode %p\n",
+		dentry, dentry->d_iname, dentry->d_inode);
+	chunkfs_debug("client dentry %p name %s inode %p\n",
+		client_dentry, client_dentry->d_iname, client_dentry->d_inode);
 
 	return d_splice_alias(inode, dentry);
  out_dput:
@@ -316,8 +314,7 @@ chunkfs_lookup(struct inode * dir, struct dentry *dentry, unsigned int flags)
  out:
 	chunkfs_free_dentry(dentry);
 
-	printk(KERN_ERR "%s(): name %s returning %d\n",
-	       __FUNCTION__, dentry->d_iname, err);
+	chunkfs_debug("name %s returning %d\n", dentry->d_iname, err);
 
 	return ERR_PTR(err);
 }
@@ -333,7 +330,7 @@ chunkfs_link(struct dentry *old_dentry, struct inode *dir,
 	struct dentry *client_new_dentry = get_client_dentry(new_dentry);
 	int err = 0;
 
-	printk(KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 
 	err = client_dir->i_op->link(client_old_dentry, client_dir,
 				     client_new_dentry);
@@ -360,7 +357,7 @@ chunkfs_unlink(struct inode *dir, struct dentry *dentry)
 	struct inode *client_inode = get_client_inode(inode);
 	int err = 0;
 
-	printk(KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 
 	err = client_dir->i_op->unlink(client_dir, client_dentry);
 	if (err)
@@ -380,8 +377,8 @@ chunkfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname)
 	struct inode *inode;
 	int err;
 
-	printk(KERN_ERR "%s(): dir ino %0lx i_count %d\n",
-	       __FUNCTION__, dir->i_ino, atomic_read(&dir->i_count));
+	chunkfs_debug("dir ino %0lx i_count %d\n",
+		dir->i_ino, atomic_read(&dir->i_count));
 
 	err = chunkfs_new_inode(dir->i_sb, &inode);
 	if (err)
@@ -400,12 +397,12 @@ chunkfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname)
 	/* Now put our new inode into the dentry */
 	d_instantiate(dentry, inode);
 
-	printk(KERN_ERR "dentry %p name %s inode %p ino %0lx\n",
-	       dentry, dentry->d_iname, dentry->d_inode,
-	       dentry->d_inode->i_ino);
-	printk(KERN_ERR "client dentry %p name %s inode %p ino %0lx\n",
-	       client_dentry, client_dentry->d_iname, client_dentry->d_inode,
-	       client_dentry->d_inode->i_ino);
+	chunkfs_debug("dentry %p name %s inode %p ino %0lx\n",
+		dentry, dentry->d_iname, dentry->d_inode,
+		dentry->d_inode->i_ino);
+	chunkfs_debug("client dentry %p name %s inode %p ino %0lx\n",
+		client_dentry, client_dentry->d_iname, client_dentry->d_inode,
+		client_dentry->d_inode->i_ino);
 	return 0;
  out_inode:
 	iput(inode);
@@ -423,9 +420,8 @@ chunkfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 	struct inode *inode;
 	int err;
 
-	printk(KERN_ERR "%s(): name %s dir ino %0lx i_count %d\n",
-	       __FUNCTION__, dentry->d_iname, dir->i_ino,
-	       atomic_read(&dir->i_count));
+	chunkfs_debug("name %s dir ino %0lx i_count %d\n",
+		dentry->d_iname, dir->i_ino, atomic_read(&dir->i_count));
 
 	err = chunkfs_new_inode(dir->i_sb, &inode);
 	if (err)
@@ -446,8 +442,7 @@ chunkfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
  out_inode:
 	iput(inode);
  out:
-	printk(KERN_ERR "%s(): name %s returning %d\n",
-	       __FUNCTION__, dentry->d_iname, err);
+	chunkfs_debug("name %s returning %d\n", dentry->d_iname, err);
 	return err;
 }
 
@@ -459,7 +454,7 @@ chunkfs_rmdir(struct inode *dir, struct dentry *dentry)
 	struct inode *inode = dentry->d_inode;
 	int err;
 
-	printk(KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 	err = client_dir->i_op->rmdir(client_dir, client_dentry);
 	if (err)
 		return err;
@@ -477,9 +472,8 @@ chunkfs_mknod(struct inode *dir, struct dentry *dentry, umode_t mode, dev_t dev)
 	struct inode *inode;
 	int err;
 
-	printk(KERN_ERR "%s(): name %s dir ino %0lx i_count %d\n",
-	       __FUNCTION__, dentry->d_iname, dir->i_ino,
-	       atomic_read(&dir->i_count));
+	chunkfs_debug("name %s dir ino %0lx i_count %d\n",
+		dentry->d_iname, dir->i_ino, atomic_read(&dir->i_count));
 
 	err = chunkfs_new_inode(dir->i_sb, &inode);
 	if (err)
@@ -500,8 +494,7 @@ chunkfs_mknod(struct inode *dir, struct dentry *dentry, umode_t mode, dev_t dev)
  out_inode:
 	iput(inode);
  out:
-	printk(KERN_ERR "%s(): name %s returning %d\n",
-	       __FUNCTION__, dentry->d_iname, err);
+	chunkfs_debug("name %s returning %d\n", dentry->d_iname, err);
 	return err;
 }
 

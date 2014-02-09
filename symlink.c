@@ -14,7 +14,7 @@ chunkfs_readlink(struct dentry *dentry, char __user *buffer, int buflen)
 	struct dentry *client_dentry = get_client_dentry(dentry);
 	int err;
 
-	printk (KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 
 	err = client_inode->i_op->readlink(client_dentry, buffer, buflen);
 
@@ -29,7 +29,7 @@ chunkfs_follow_link(struct dentry *dentry, struct nameidata *nd)
 	struct nameidata *client_nd = get_client_nd(dentry);
 	void *cookie;
 
-	printk (KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 
 	chunkfs_copy_down_nd(nd, client_nd);
 
@@ -47,7 +47,7 @@ chunkfs_put_link(struct dentry *dentry, struct nameidata *nd, void *cookie)
 	struct dentry *client_dentry = get_client_dentry(dentry);
 	struct nameidata *client_nd = get_client_nd(dentry);
 
-	printk (KERN_ERR "%s()\n", __FUNCTION__);
+	chunkfs_debug("enter\n");
 	if (client_inode->i_op->put_link) {
 		chunkfs_copy_down_nd(nd, client_nd);
 		client_inode->i_op->put_link(client_dentry, client_nd, cookie);
