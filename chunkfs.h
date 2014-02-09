@@ -19,6 +19,20 @@
 #endif
 #include <linux/limits.h>
 
+/**
+ * Debugging
+ */
+#ifdef CHUNKFS_DEBUG
+#define chunkfs_debug(f, a...)					\
+	do {								\
+		printk(KERN_DEBUG "chunkfs (%s, %d): %s:",	\
+			__FILE__, __LINE__, __func__);			\
+		printk(KERN_DEBUG f, ## a);				\
+	} while (0)
+#else
+#define chunkfs_debug(fmt, ...)	no_printk(fmt, ##__VA_ARGS__)
+#endif
+
 /*
  * NOTE: Most on disk structures need:
  *
