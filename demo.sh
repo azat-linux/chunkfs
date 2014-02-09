@@ -3,8 +3,19 @@
 # Demo script for chunkfs to be run from inside UML.
 #
 
+function getSelfDirectory()
+{
+    self="${1%/*}"
+    if [ ! ${self:0:1} = "/" ]; then
+        self="$PWD/$self"
+    fi
+
+    echo "$self/"
+}
+SELF="$(getSelfDirectory $0)"
+
 # This is where the chunkfs user binaries are located.
-BINPATH=/chunkfs_bin
+BINPATH="$SELF"
 MNT=/mnt
 
 # Name of the file backing the loop device
