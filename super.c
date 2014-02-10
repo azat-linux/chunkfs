@@ -520,8 +520,7 @@ static void chunkfs_kill_super(struct super_block *sb)
 	fmode_t mode = sb->s_mode;
 
 	bdev->bd_super = NULL;
-	// because of bug
-	// generic_shutdown_super(sb);
+	generic_shutdown_super(sb);
 	sync_blockdev(bdev);
 	WARN_ON_ONCE(!(mode & FMODE_EXCL));
 	blkdev_put(bdev, mode | FMODE_EXCL);
