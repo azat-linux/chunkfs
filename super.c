@@ -68,6 +68,8 @@ static void chunkfs_clear_inode(struct inode *inode)
 	chunkfs_debug("ino %0lx i_count %d\n",
 		inode->i_ino, atomic_read(&inode->i_count));
 	iput(ii->ii_client_inode);
+
+	clear_inode(inode);
 }
 
 static int
